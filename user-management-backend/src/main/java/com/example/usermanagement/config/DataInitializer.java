@@ -15,7 +15,7 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // اضافه کردن داده‌های تستی
+        // داده‌های تستی
         if (userRepository.count() == 0) {
             userRepository.save(new User("علی احمدی", 25, "تهران", "مهندس نرم‌افزار"));
             userRepository.save(new User("فاطمه محمدی", 30, "اصفهان", "معلم"));

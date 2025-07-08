@@ -6,6 +6,7 @@ com\example\usermanagement\controller\ActivityLogController.class
 com\example\usermanagement\service\ActivityLogService.class
 com\example\usermanagement\repository\ActivityLogRepository.class
 com\example\usermanagement\security\JwtAuthenticationFilter.class
+com\example\usermanagement\security\CustomUserDetailsService.class
 com\example\usermanagement\config\CorsConfig.class
 com\example\usermanagement\dto\LoginRequest.class
 com\example\usermanagement\controller\UserController.class

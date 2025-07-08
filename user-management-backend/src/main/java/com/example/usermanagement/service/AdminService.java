@@ -10,7 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class AdminService implements UserDetailsService {
+public class AdminService {
 
     @Autowired
     private AdminRepository adminRepository;
@@ -18,12 +18,6 @@ public class AdminService implements UserDetailsService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Admin admin = adminRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("کاربر یافت نشد: " + username));
-        return admin;
-    }
 
     public Admin createAdmin(String username, String password, String fullName) {
         if (adminRepository.existsByUsername(username)) {
@@ -35,6 +29,12 @@ public class AdminService implements UserDetailsService {
     }
 
     public Admin findByUsername(String username) {
-        return adminRepository.findByUsername(username).orElse(null);
+         return adminRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("کاربر یافت نشد"));
+    }
+
+     public Admin save(Admin admin) {
+        admin.setPassword(passwordEncoder.encode(admin.getPassword()));
+        return adminRepository.save(admin);
     }
 }

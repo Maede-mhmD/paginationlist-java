@@ -1,5 +1,7 @@
 package com.example.usermanagement.controller;
 
+import com.example.usermanagement.entity.Admin;
+import com.example.usermanagement.service.AdminService;
 import com.example.usermanagement.dto.LoginRequest;
 import com.example.usermanagement.dto.LoginResponse;
 import com.example.usermanagement.security.JwtTokenProvider;
@@ -33,6 +35,9 @@ public class AuthController {
     @Autowired
     private ActivityLogService activityLogService;
 
+    @Autowired
+    private AdminService adminService;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest,
             BindingResult result,
@@ -52,12 +57,18 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             String jwt = tokenProvider.generateToken(authentication);
 
+            Admin admin = adminService.findByUsername(loginRequest.getUsername());
             // Log login activity
             String ipAddress = IpUtil.getClientIpAddress(request);
             activityLogService.logLogin(loginRequest.getUsername(), ipAddress);
 
-            return ResponseEntity.ok(new LoginResponse(jwt, loginRequest.getUsername(),
-                    authentication.getName(), 86400L));
+            LoginResponse response = new LoginResponse(
+                    jwt,
+                    admin.getUsername(),
+                    admin.getFullName(),
+                    (long) tokenProvider.getJwtExpirationInMs() / 1000);
+
+        return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "نام کاربری یا رمز عبور اشتباه است"));
         }
