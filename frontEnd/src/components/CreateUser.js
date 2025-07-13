@@ -1,10 +1,11 @@
 // src/components/CreateUser.js
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import "../index.css";
 
 export default function CreateUserPage() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     age: "",
@@ -43,6 +44,11 @@ export default function CreateUserPage() {
       if (response.ok) {
         setMessage("کاربر با موفقیت اضافه شد.");
         setFormData({ name: "", age: "", city: "", job: "" });
+
+        setTimeout(() => {
+          navigate("/");
+        }, );
+
       } else {
         const errorData = await response.json();
         setMessage(`خطا: ${errorData.error || "خطا در ایجاد کاربر"}`);
@@ -68,6 +74,8 @@ export default function CreateUserPage() {
     );
   }
 
+
+  
   return (
     <div className="add-user-container" dir="rtl">
       <div className="add-user-title">افزودن کاربر جدید</div>
