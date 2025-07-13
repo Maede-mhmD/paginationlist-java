@@ -1,19 +1,19 @@
 package com.example.usermanagement.dto;
 
 import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UserStatusRequest {
-    @NotNull(message = "وضعیت فعال بودن باید مشخص شود")
+    @NotNull(message = "وضعیت فعال بودن نمی‌تواند خالی باشد")
+    @JsonProperty("isActive")
     private Boolean isActive;
 
-    // Constructors
     public UserStatusRequest() {}
 
     public UserStatusRequest(Boolean isActive) {
         this.isActive = isActive;
     }
 
-    // Getters and Setters
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
 }

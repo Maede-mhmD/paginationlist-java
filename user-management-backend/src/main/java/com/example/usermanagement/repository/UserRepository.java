@@ -11,12 +11,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-       boolean existsByName(String name);
-
        @Query("SELECT u FROM User u WHERE " +
-                     "(:name IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
-                     "(:city IS NULL OR LOWER(u.city) LIKE LOWER(CONCAT('%', :city, '%'))) AND " +
-                     "(:job IS NULL OR LOWER(u.job) LIKE LOWER(CONCAT('%', :job, '%'))) AND " +
+                     "(:name IS NULL OR :name = '' OR LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
+                     "(:city IS NULL OR :city = '' OR LOWER(u.city) LIKE LOWER(CONCAT('%', :city, '%'))) AND " +
+                     "(:job IS NULL OR :job = '' OR LOWER(u.job) LIKE LOWER(CONCAT('%', :job, '%'))) AND " +
                      "(:age IS NULL OR u.age = :age)")
        Page<User> findUsersWithFilters(@Param("name") String name,
                      @Param("city") String city,

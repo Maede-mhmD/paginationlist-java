@@ -1,10 +1,12 @@
-// src/main/java/com/example/usermanagement/config/DataInitializer.java
 package com.example.usermanagement.config;
 
+import com.example.usermanagement.entity.AppUser;
 import com.example.usermanagement.entity.User;
+import com.example.usermanagement.repository.AppUserRepository;
 import com.example.usermanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,14 +15,25 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AppUserRepository appUserRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public void run(String... args) throws Exception {
-        // داده‌های تستی
+        if (!appUserRepository.existsByUsername("admin")) {
+            AppUser admin = new AppUser("admin", passwordEncoder.encode("admin123"));
+            appUserRepository.save(admin);
+        }
+
+        //   داده‌های تستی
         if (userRepository.count() == 0) {
             userRepository.save(new User("علی احمدی", 25, "تهران", "مهندس نرم‌افزار"));
             userRepository.save(new User("فاطمه محمدی", 30, "اصفهان", "معلم"));
             userRepository.save(new User("حسن رضایی", 28, "شیراز", "پزشک"));
-            userRepository.save(new User("مریم صادقی", 35, "تبریز", "وکیل"));
+            userRepository.save(new User("مریم صادقی", 35, "هرمزگان", "وکیل"));
             userRepository.save(new User("محمد کریمی", 22, "مشهد", "دانشجو"));
             userRepository.save(new User("زهرا نوری", 29, "کرج", "طراح"));
             userRepository.save(new User("رضا موسوی", 32, "اهواز", "مدیر"));

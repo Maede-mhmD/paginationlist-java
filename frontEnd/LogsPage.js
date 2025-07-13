@@ -8,22 +8,23 @@ export default function LogsPage() {
 
   useEffect(() => {
     fetch("http://localhost:8080/api/logs", {
-      credentials: "include"
+      credentials: "include",
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("خطا در دریافت لاگ‌ها");
         return res.json();
       })
-      .then(data => {
+      .then((data) => {
         setLogs(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setError(err.message);
         setLoading(false);
       });
   }, []);
 
+  
   return (
     <div className="logs-container" dir="rtl">
       <h2>لاگ اکشن کاربران</h2>
@@ -40,7 +41,7 @@ export default function LogsPage() {
             </tr>
           </thead>
           <tbody>
-            {logs.map(log => (
+            {logs.map((log) => (
               <tr key={log.id}>
                 <td>{log.action}</td>
                 <td>{log.affected_id || "-"}</td>

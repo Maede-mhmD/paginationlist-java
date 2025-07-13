@@ -1,31 +1,38 @@
 package com.example.usermanagement.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 public class PageResponse<T> {
-    private List<T> data;
-    private long totalElements;
+    private List<T> items;
+    
+    @JsonProperty("total_items")
+    private long totalItems;
+    
+    @JsonProperty("total_pages")
     private int totalPages;
+    
+    @JsonProperty("current_page")
     private int currentPage;
+    
+    @JsonProperty("per_page")
     private int perPage;
 
-    // Constructors
     public PageResponse() {}
 
-    public PageResponse(List<T> data, long totalElements, int totalPages, int currentPage, int perPage) {
-        this.data = data;
-        this.totalElements = totalElements;
+    public PageResponse(List<T> items, long totalItems, int totalPages, int currentPage, int perPage) {
+        this.items = items;
+        this.totalItems = totalItems;
         this.totalPages = totalPages;
         this.currentPage = currentPage;
         this.perPage = perPage;
     }
 
-    // Getters and Setters
-    public List<T> getData() { return data; }
-    public void setData(List<T> data) { this.data = data; }
+    public List<T> getItems() { return items; }
+    public void setItems(List<T> items) { this.items = items; }
 
-    public long getTotalElements() { return totalElements; }
-    public void setTotalElements(long totalElements) { this.totalElements = totalElements; }
+    public long getTotalItems() { return totalItems; }
+    public void setTotalItems(long totalItems) { this.totalItems = totalItems; }
 
     public int getTotalPages() { return totalPages; }
     public void setTotalPages(int totalPages) { this.totalPages = totalPages; }

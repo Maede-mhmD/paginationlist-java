@@ -1,6 +1,8 @@
+// src/components/DataTable.js
 import React, { useState, useEffect } from "react";
-import { Search, ToggleLeft, ToggleRight } from "lucide-react";
+import { Search, ToggleLeft, ToggleRight, LogOut, User } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import "../index.css";
 
 export default function DataTable() {
@@ -17,6 +19,7 @@ export default function DataTable() {
     age: "",
   });
   const [connectionStatus, setConnectionStatus] = useState("در حال اتصال...");
+  const { user, logout, isAuthenticated } = useAuth();
 
   const itemsPerPage = 5;
   const apiUrl = "http://127.0.0.1:5000/api/users";
@@ -24,10 +27,14 @@ export default function DataTable() {
   useEffect(() => {
     const testConnection = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/users");
+        const response = await fetch("http://127.0.0.1:5000/api/users", {
+          credentials: "include",
+        });
         if (response.ok) {
           setConnectionStatus("اتصال به سرور برقرار است");
           console.log("اتصال به سرور برقرار است");
+        } else if (response.status === 401) {
+          setConnectionStatus("لطفاً وارد سیستم شوید");
         } else {
           setConnectionStatus(`خطا در اتصال: ${response.status}`);
           console.error(`خطا در اتصال: ${response.status}`);
@@ -42,6 +49,11 @@ export default function DataTable() {
   }, []);
 
   const fetchData = async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const params = new URLSearchParams({
@@ -52,8 +64,21 @@ export default function DataTable() {
         job: filters.job,
         age: filters.age,
       });
-      const response = await fetch(`${apiUrl}?${params}`);
+
+      const response = await fetch(`${apiUrl}?${params}`, {
+        credentials: "include",
+      });
+
+      if (response.status === 401) {
+        setError("لطفاً وارد سیستم شوید");
+        setData([]);
+        setTotalPages(0);
+        setTotalItems(0);
+        return;
+      }
+
       if (!response.ok) throw new Error("خطا در دریافت داده‌ها");
+
       const result = await response.json();
       console.log(result);
 
@@ -81,7 +106,7 @@ export default function DataTable() {
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line
-  }, [currentPage, filters]);
+  }, [currentPage, filters, isAuthenticated]);
 
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
@@ -112,8 +137,14 @@ export default function DataTable() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({ isActive: updatedUser.isActive }),
       });
+
+      if (response.status === 401) {
+        alert("لطفاً دوباره وارد سیستم شوید");
+        return;
+      }
 
       if (!response.ok) throw new Error("خطا در بروزرسانی وضعیت کاربر");
 
@@ -126,9 +157,33 @@ export default function DataTable() {
     }
   };
 
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result.success) {
+      alert("خروج موفقیت‌آمیز بود");
+    }
+  };
+
+
   return (
     <div className="container" dir="rtl">
-      <h1 className="title">لیست اطلاعات کاربران</h1>
+      <div className="header">
+        <h1 className="title">لیست اطلاعات کاربران</h1>
+        <div className="user-info">
+          <div className="user-details">
+            <User size={20} />
+            {isAuthenticated && (
+            <span>خوش آمدید، {user?.username}</span>
+            )}
+          </div>
+          {isAuthenticated && ( 
+          <button className="logout-btn" onClick={handleLogout}>
+            <LogOut size={12} />
+            خروج
+          </button>
+          )}
+        </div>
+      </div>
 
       <div className="filter-box">
         <div className="filter-field">
@@ -179,13 +234,15 @@ export default function DataTable() {
         <button className="clear-btn" onClick={clearFilters}>
           پاک کردن فیلترها
         </button>
-
-        <Link to="/login" className="loging-user-btn">
-          ثبت نام
-        </Link>
-
         <Link to="/create-user" className="add-user-btn">
           افزودن کاربر
+        </Link>
+        {/* دکمه ورود / لاگ‌ها (تغییر بر اساس وضعیت احراز هویت) */}
+        <Link
+          to={isAuthenticated ? "/logs" : "/login"}
+          className="loging-user-btn"
+        >
+          {isAuthenticated ? "مشاهده لاگ‌ها" : "ورود"}
         </Link>
       </div>
 
@@ -241,7 +298,7 @@ export default function DataTable() {
               ) : (
                 <tr>
                   <td colSpan="7" className="no-data">
-                    هیچ داده‌ای یافت نشد
+                    برای دریافت اطلاعات کاربران وارد شوید{" "}
                   </td>
                 </tr>
               )}

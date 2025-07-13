@@ -4,17 +4,12 @@ import com.example.usermanagement.dto.PageResponse;
 import com.example.usermanagement.dto.UserRequest;
 import com.example.usermanagement.dto.UserStatusRequest;
 import com.example.usermanagement.entity.User;
-import com.example.usermanagement.service.ActivityLogService;
+import com.example.usermanagement.service.ActionLogService;
 import com.example.usermanagement.service.UserService;
-import com.example.usermanagement.util.IpUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,22 +19,17 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = { "http://localhost:3000", "http://127.0.0.1:3000" }, allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
 
     @Autowired
     private UserService userService;
 
     @Autowired
-    private ActivityLogService activityLogService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    private ActionLogService actionLogService;
 
     @PostMapping
-    public ResponseEntity<?> createUser(@Valid @RequestBody UserRequest userRequest,
-            BindingResult result,
-            HttpServletRequest request) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody UserRequest userRequest, BindingResult result) {
         if (result.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
             result.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
@@ -49,9 +39,12 @@ public class UserController {
         try {
             User user = userService.createUser(userRequest);
 
-            logUserActivity("CREATE_USER", "ایجاد کاربر جدید", user.getId(), user, request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(user);
+            // ثبت لاگ ایجاد کاربر
+            // actionLogService.logAction("CREATE_USER", user.getId(),
+            // "کاربر جدید با نام " + user.getName() + " ایجاد شد");
 
+            actionLogService.logUserCreation(adminUsername, ipAddress, user.getId(), user.toString());
+            return ResponseEntity.status(HttpStatus.CREATED).body(user);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "خطا در ایجاد کاربر: " + e.getMessage()));
@@ -65,14 +58,14 @@ public class UserController {
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String job,
-            @RequestParam(required = false) Integer age,
-            HttpServletRequest request) {
+            @RequestParam(required = false) Integer age) {
 
         try {
             PageResponse<User> users = userService.getUsers(page, per_page, name, city, job, age);
 
-            String filters = String.format("name=%s, city=%s, job=%s, age=%s", name, city, job, age);
-            activityLogService.logUsersList(getCurrentUsername(), IpUtil.getClientIpAddress(request), filters);
+            // ثبت لاگ مشاهده لیست کاربران
+            // actionLogService.logAction("VIEW_USERS", null,
+            //         "مشاهده لیست کاربران - صفحه " + page + " با " + per_page + " آیتم");
 
             return ResponseEntity.ok(users);
         } catch (Exception e) {
@@ -82,11 +75,14 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getUserById(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<?> getUserById(@PathVariable Long id) {
         try {
             User user = userService.getUserById(id);
 
-            activityLogService.logUserView(getCurrentUsername(), IpUtil.getClientIpAddress(request), id);
+            // ثبت لاگ مشاهده کاربر
+            // actionLogService.logAction("VIEW_USER", id,
+            //         "مشاهده اطلاعات کاربر " + user.getName());
+
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -100,8 +96,7 @@ public class UserController {
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateUserStatus(@PathVariable Long id,
             @Valid @RequestBody UserStatusRequest statusRequest,
-            BindingResult result,
-            HttpServletRequest request) {
+            BindingResult result) {
         if (result.hasErrors()) {
             String errors = result.getFieldErrors().stream()
                     .map(error -> error.getDefaultMessage())
@@ -112,7 +107,11 @@ public class UserController {
         try {
             User user = userService.updateUserStatus(id, statusRequest);
 
-            logUserActivity("UPDATE_USER", "بروزرسانی وضعیت کاربر", user.getId(), user, request);
+            // ثبت لاگ تغییر وضعیت کاربر
+            String status = statusRequest.getIsActive() ? "فعال" : "غیرفعال";
+            actionLogService.logAction("UPDATE_USER_STATUS", id,
+                    "وضعیت کاربر " + user.getName() + " به " + status + " تغییر یافت");
+
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -123,39 +122,4 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteUser(@PathVariable Long id, HttpServletRequest request) {
-        try {
-            User userToDelete = userService.getUserById(id);
-            userService.deleteUser(id);
-
-            logUserActivity("DELETE_USER", "حذف کاربر", id, userToDelete, request);
-
-            return ResponseEntity.ok(Map.of("message", "کاربر با موفقیت حذف شد"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "خطا در حذف کاربر: " + e.getMessage()));
-        }
-    }
-
-    private String getCurrentUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (authentication != null) ? authentication.getName() : "SYSTEM";
-    }
-
-    private void logUserActivity(String action, String description, Long entityId, Object data,
-            HttpServletRequest request) {
-        String adminUsername = getCurrentUsername();
-        String ipAddress = IpUtil.getClientIpAddress(request);
-        String details = "";
-        try {
-            details = objectMapper.writeValueAsString(data);
-        } catch (Exception e) {
-            details = "Error converting data to JSON";
-        }
-        activityLogService.logActivity(adminUsername, action, description, "User", entityId, ipAddress, details);
-    }
 }
