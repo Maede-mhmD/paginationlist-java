@@ -87,11 +87,11 @@ export default function Login() {
         </Link>
       </div>
 
-      <div className="login-info">
+      {/* <div className="login-info">
         <p>برای تست از اطلاعات زیر استفاده کنید:</p>
         <p><strong>نام کاربری:</strong> admin</p>
         <p><strong>رمز عبور:</strong> admin123</p>
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -309,11 +309,11 @@ th {
 .loging-user-container {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 2px;
   max-width: 300px;
-  height: 350px;
+  height: auto;
   margin: 40px auto;
-  padding: 32px 28px 20px 28px;
+  padding: 3px 28px 2px 28px;
   background-color: #a5daea;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   border-radius: 8px;
@@ -357,10 +357,19 @@ th {
 
 .login-footer{
   text-align: center;
-  margin-top: 5px;
+  /* margin-top: 2px; */
+  font-size: 14px;
+  display: flex;
+  flex-direction: column;
 }
+
+.login-footer > * {
+  margin:0 ;
+  padding: 0;
+}
+
 .login-info {
-  margin-top: 30px;
+  margin-top: 50px;
   padding: 1%5px;
   background: #f8f9fa;
   border-radius: 6px;
@@ -395,24 +404,25 @@ th {
 }
 
 .back-to-main-page {
-  padding: 6px 14px;
-  max-width: 150px;
+  padding: 6px 14px ;
+  max-width: 250px;
   text-align: center;
-  margin: 0 6px;
+  margin: 2px 15px;
   background-color: #8eabb3;
   border: #17087a;
   border-radius: 4px;
   color: #ffffff;
   cursor: pointer;
   text-decoration: none;
-  margin-top: 10px;
+  margin-top: 15px;
+  margin-bottom: 15px;
 }
 
 .back-to-main-page:hover {
   padding: 6px 14px;
-  max-width: 150px;
+  max-width: 250px;
   text-align: center;
-  margin: 0 6px;
+  margin: 2px 16px;
   background-color: #475c61;
   border: #17087a;
   border-radius: 4px;
@@ -420,11 +430,12 @@ th {
   cursor: pointer;
   text-decoration: none;
   margin-top: 10px;
+  margin-bottom: 14px;
 }
 
 /* Navigation.css */
 .navigation {
-  background: #2d3748;
+  background: #086774;
   color: white;
   padding: 1rem 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -474,8 +485,8 @@ th {
 }
 
 .nav-links a:hover {
-  background: #4a5568;
-  color: #63b3ed;
+  background: #f1f1f1;
+  color: #0e466e;
 }
 
 .nav-links a.active {
@@ -635,6 +646,10 @@ th {
   display: flex;
   align-items: center;
   gap: 15px;
+}
+
+.user-details{
+  margin-bottom: 10px;
 }
 
 .user-info span {

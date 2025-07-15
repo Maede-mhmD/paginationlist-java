@@ -40,10 +40,9 @@ public class UserController {
             User user = userService.createUser(userRequest);
 
             // ثبت لاگ ایجاد کاربر
-            // actionLogService.logAction("CREATE_USER", user.getId(),
-            // "کاربر جدید با نام " + user.getName() + " ایجاد شد");
+            actionLogService.logAction("CREATE_USER", user.getId(),
+                    "کاربر جدید با نام " + user.getName() + " ایجاد شد");
 
-            actionLogService.logUserCreation(adminUsername, ipAddress, user.getId(), user.toString());
             return ResponseEntity.status(HttpStatus.CREATED).body(user);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -64,8 +63,8 @@ public class UserController {
             PageResponse<User> users = userService.getUsers(page, per_page, name, city, job, age);
 
             // ثبت لاگ مشاهده لیست کاربران
-            // actionLogService.logAction("VIEW_USERS", null,
-            //         "مشاهده لیست کاربران - صفحه " + page + " با " + per_page + " آیتم");
+            actionLogService.logAction("VIEW_USERS", null,
+                    "مشاهده لیست کاربران - صفحه " + page + " با " + per_page + " آیتم");
 
             return ResponseEntity.ok(users);
         } catch (Exception e) {
@@ -80,8 +79,8 @@ public class UserController {
             User user = userService.getUserById(id);
 
             // ثبت لاگ مشاهده کاربر
-            // actionLogService.logAction("VIEW_USER", id,
-            //         "مشاهده اطلاعات کاربر " + user.getName());
+            actionLogService.logAction("VIEW_USER", id,
+                    "مشاهده اطلاعات کاربر " + user.getName());
 
             return ResponseEntity.ok(user);
         } catch (RuntimeException e) {
@@ -121,5 +120,4 @@ public class UserController {
                     .body(Map.of("error", "خطا در بروزرسانی وضعیت کاربر: " + e.getMessage()));
         }
     }
-
 }

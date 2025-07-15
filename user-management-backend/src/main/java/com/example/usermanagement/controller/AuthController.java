@@ -1,6 +1,8 @@
 package com.example.usermanagement.controller;
 
 import com.example.usermanagement.dto.LoginRequest;
+import com.example.usermanagement.dto.RegisterRequest;
+import com.example.usermanagement.repository.AppUserRepository;
 import com.example.usermanagement.service.ActionLogService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -13,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +32,12 @@ public class AuthController {
 
     @Autowired
     private ActionLogService actionLogService;
+
+    @Autowired
+    private AppUserRepository appUserRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest,

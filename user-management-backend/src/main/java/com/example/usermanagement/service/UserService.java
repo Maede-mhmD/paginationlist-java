@@ -29,7 +29,6 @@ public class UserService {
     }
 
     public PageResponse<User> getUsers(int page, int perPage, String name, String city, String job, Integer age) {
-        // Convert empty strings to null for query
         String nameFilter = (name != null && name.trim().isEmpty()) ? null : name;
         String cityFilter = (city != null && city.trim().isEmpty()) ? null : city;
         String jobFilter = (job != null && job.trim().isEmpty()) ? null : job;

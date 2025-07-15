@@ -1,4 +1,3 @@
-// src/components/DataTable.js
 import React, { useState, useEffect } from "react";
 import { Search, ToggleLeft, ToggleRight, LogOut, User } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -176,12 +175,12 @@ export default function DataTable() {
             <span>خوش آمدید، {user?.username}</span>
             )}
           </div>
-          {isAuthenticated && ( 
+          {/* {isAuthenticated && ( 
           <button className="logout-btn" onClick={handleLogout}>
             <LogOut size={12} />
             خروج
           </button>
-          )}
+          )} */}
         </div>
       </div>
 

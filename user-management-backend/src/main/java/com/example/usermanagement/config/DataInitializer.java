@@ -15,19 +15,9 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private AppUserRepository appUserRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     @Override
     public void run(String... args) throws Exception {
-        if (!appUserRepository.existsByUsername("admin")) {
-            AppUser admin = new AppUser("admin", passwordEncoder.encode("admin123"));
-            appUserRepository.save(admin);
-        }
-
+    
         //   داده‌های تستی
         if (userRepository.count() == 0) {
             userRepository.save(new User("علی احمدی", 25, "تهران", "مهندس نرم‌افزار"));

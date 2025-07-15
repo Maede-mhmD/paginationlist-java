@@ -9,14 +9,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/logs")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class LogController {
 
     @Autowired
     private ActionLogService actionLogService;
 
-    @GetMapping("/logs")
+    // @GetMapping("/logs")
+    // public ResponseEntity<List<ActionLog>> getLogs() {
+    // List<ActionLog> logs = actionLogService.getAllLogs();
+    // return ResponseEntity.ok(logs);
+    // }
+
+    @GetMapping
     public ResponseEntity<List<ActionLog>> getLogs() {
         List<ActionLog> logs = actionLogService.getAllLogs();
         return ResponseEntity.ok(logs);

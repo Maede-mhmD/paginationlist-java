@@ -1,134 +1,81 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import "../index.css";
 
 export default function LogsPage() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [loginData, setLoginData] = useState({ username: "", password: "" });
-  const [loginError, setLoginError] = useState("");
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { isAuthenticated, currentUser, logout } = useAuth();
+  const navigate = useNavigate();
 
-  // بررسی وضعیت احراز هویت در بارگذاری صفحه
+  // بررسی احراز هویت
   useEffect(() => {
-    checkAuthStatus();
-  }, []);
-
-  // دریافت لاگ‌ها پس از احراز هویت
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchLogs();
+    console.log("LogsPage - isAuthenticated:", isAuthenticated);
+    console.log("LogsPage - currentUser:", currentUser);
+    
+    if (!isAuthenticated) {
+      console.log("User not authenticated, redirecting to login");
+      navigate("/login");
+      return;
     }
-  }, [isAuthenticated]);
-
-  // بررسی وضعیت احراز هویت
-  const checkAuthStatus = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:5000/api/me", {
-        credentials: "include"
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.authenticated) {
-          setIsAuthenticated(true);
-          setCurrentUser(data.username);
-        }
-      }
-    } catch (error) {
-      console.error("خطا در بررسی وضعیت احراز هویت:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    
+    fetchLogs();
+  }, [isAuthenticated, navigate]);
 
   // دریافت لاگ‌ها
   const fetchLogs = async () => {
+    if (!isAuthenticated) {
+      console.log("Not authenticated, skipping fetch");
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await fetch("http://127.0.0.1:5000/api/logs", {
-        credentials: "include"
+      setError("");
+      
+      console.log("Fetching logs from: http://127.0.0.1:5000/api/logs");
+      
+      const response = await fetch("http://localhost:5000/api/logs", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        }
       });
       
+      console.log("Response status:", response.status);
+      
       if (!response.ok) {
-        throw new Error("خطا در دریافت لاگ‌ها");
+        if (response.status === 401) {
+          console.log("Unauthorized, redirecting to login");
+          navigate("/login");
+          return;
+        }
+        throw new Error(`خطا در دریافت لاگ‌ها: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log("Logs received:", data);
       setLogs(data);
+      
     } catch (err) {
+      console.error("Error fetching logs:", err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // useEffect(() => {
-  //   fetchLogs();
-  //   //آپدیت خودکار صفحه لاگ ها
-  //   const interval = setInterval(fetchLogs, 5000);
-  //   return () => clearInterval(interval);
-  // }, []);
-  
-  // پردازش لاگین
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setIsLoggingIn(true);
-    setLoginError("");
-
-    try {
-      const response = await fetch("http://127.0.0.1:5000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(loginData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setIsAuthenticated(true);
-        setCurrentUser(data.username);
-        setLoginData({ username: "", password: "" });
-      } else {
-        setLoginError(data.error || "خطا در ورود");
-      }
-    } catch (error) {
-      setLoginError("خطا در اتصال به سرور");
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
   // پردازش خروج
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        setIsAuthenticated(false);
-        setCurrentUser(null);
-        setLogs([]);
-      }
+      await logout();
+      navigate("/login");
     } catch (error) {
       console.error("خطا در خروج:", error);
     }
-  };
-
-  // تغییر مقادیر فرم لاگین
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setLoginData(prev => ({
-      ...prev,
-      [name]: value
-    }));
   };
 
   // تبدیل نام اکشن به فارسی
@@ -137,6 +84,7 @@ export default function LogsPage() {
       "LOGIN": "ورود",
       "LOGOUT": "خروج",
       "LOGIN_FAILED": "ورود ناموفق",
+      "REGISTER": "ثبت نام",
       "CREATE_USER": "ایجاد کاربر",
       "VIEW_USERS": "مشاهده لیست کاربران",
       "VIEW_USER": "مشاهده کاربر",
@@ -146,22 +94,16 @@ export default function LogsPage() {
     return actionMap[action] || action;
   };
 
-  // نمایش پیام برای کاربران غیر احراز هویت شده
-  if (!isAuthenticated) {
-    return (
-      <div className="logs-container" dir="rtl">
-        <div className="auth-required">
-          <h2>دسترسی محدود</h2>
-          <p>برای مشاهده لاگ اکشن‌ها نیاز به ورود به سیستم دارید.</p>
-          <a href="/login" className="login-btn">
-            ورود به سیستم
-          </a>
-        </div>
-      </div>
-    );
+  // نمایش loading تا زمان بررسی احراز هویت
+  if (loading && !isAuthenticated) {
+    return <div className="loading">در حال بررسی احراز هویت...</div>;
   }
 
-  // نمایش صفحه لاگ‌ها
+  // اگر کاربر احراز هویت نشده باشد، صفحه نمایش داده نشود
+  if (!isAuthenticated) {
+    return <div className="loading">در حال انتقال به صفحه ورود...</div>;
+  }
+
   return (
     <div className="logs-container" dir="rtl">
       <div className="logs-header">
@@ -176,9 +118,10 @@ export default function LogsPage() {
         <button onClick={fetchLogs} disabled={loading} className="refresh-btn">
           {loading ? "در حال بارگذاری..." : "به‌روزرسانی لاگ‌ها"}
         </button>
+        
       </div>
 
-      {loading && <div className="loading">در حال بارگذاری...</div>}
+      {loading && <div className="loading">در حال بارگذاری لاگ‌ها...</div>}
       {error && <div className="error">{error}</div>}
       
       {!loading && !error && (

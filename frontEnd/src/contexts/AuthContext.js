@@ -3,6 +3,8 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext();
 
+const API_BASE_URL = 'http://localhost:5000';
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -23,7 +25,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/me', {
+      const response = await fetch(`${API_BASE_URL}/api/me`, {
         credentials: 'include'
       });
       
@@ -46,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/login', {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +74,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/logout', {
+      const response = await fetch(`${API_BASE_URL}/api/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -95,13 +97,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ثبت‌نام کاربر جدید
+  const register = async (username, password) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        return { success: true, message: data.message };
+      } else {
+        return { success: false, message: data.error || 'خطا در ثبت نام' };
+      }
+    } catch (error) {
+      console.error('خطا در ثبت نام:', error);
+      return { success: false, message: 'خطا در ارتباط با سرور' };
+    }
+  };
+
   const value = {
     user,
     isAuthenticated,
     isLoading,
     login,
     logout,
-    checkAuthStatus
+    checkAuthStatus,
+    register
   };
 
   return (
